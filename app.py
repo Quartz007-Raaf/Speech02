@@ -22,15 +22,40 @@ default_text = (
 
 text_input = st.text_area("Voer je tekst in:", value=default_text, height=250)
 
+# Woordenboeken met uitgebreide stemmen per taal
+voices_en = {
+    "Guy (Man - Serieus/Origineel)": "en-US-GuyNeural",
+    "Andrew (Man - Nieuws/Formeel)": "en-US-AndrewNeural",
+    "Brian (Man - Brits accent)": "en-GB-BrianNeural",
+    "Aria (Vrouw - Vriendelijk)": "en-US-AriaNeural",
+    "Jenny (Vrouw - Natuurlijk/Gesprek)": "en-US-JennyNeural",
+    "Emma (Vrouw - Brits accent)": "en-GB-EmmaNeural"
+}
+
+voices_nl = {
+    "Maarten (Man - Nederlands Standaard)": "nl-NL-MaartenNeural",
+    "Fenna (Vrouw - Nederlands Standaard)": "nl-NL-FennaNeural",
+    "Colette (Vrouw - Vlaams/Belgisch)": "nl-BE-ColetteNeural",
+    "Arnaud (Man - Vlaams/Belgisch)": "nl-BE-ArnaudNeural"
+}
+
 # Instellingen voor de stem
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
+
 with col1:
-    # en-US-GuyNeural is de stem uit je originele Azure-bestand
-    voice_option = st.selectbox(
-        "Kies een stem:",
-        ["en-US-GuyNeural", "en-US-AriaNeural", "nl-NL-MaartenNeural", "nl-NL-ColetteNeural"]
-    )
+    # Kies eerst de taal
+    language_option = st.selectbox("Kies taal:", ["Engels (US/GB)", "Nederlands / Vlaams"])
+
 with col2:
+    # Laad de stemmen op basis van de gekozen taal
+    if language_option == "Engels (US/GB)":
+        selected_voice_label = st.selectbox("Kies een stem:", list(voices_en.keys()))
+        voice_id = voices_en[selected_voice_label]
+    else:
+        selected_voice_label = st.selectbox("Kies een stem:", list(voices_nl.keys()))
+        voice_id = voices_nl[selected_voice_label]
+
+with col3:
     speed = st.slider("Spraaksnelheid (Rate):", min_value=-50, max_value=50, value=-20, step=5)
 
 # Toonhoogte aanpassing (Pitch)
@@ -40,7 +65,6 @@ output_filename = "output_free.mp3"
 
 # Asynchrone functie om de audio te genereren via edge-tts
 async def generate_audio(text, voice, rate_val, pitch_val, output_file):
-    # Formateer de parameters zoals edge-tts dat verwacht (bijv. "-20%" of "+0%")
     rate_str = f"{rate_val:+d}%" if rate_val != 0 else "+0%"
     pitch_str = f"{pitch_val:+d}%" if pitch_val != 0 else "+0%"
     
@@ -53,8 +77,8 @@ if st.button("Genereer en Beluister Audio", type="primary"):
     else:
         with st.spinner("Bezig met het genereren van de audio..."):
             try:
-                # Start het asynchrone proces
-                asyncio.run(generate_audio(text_input, voice_option, speed, pitch, output_filename))
+                # Start het asynchrone proces met de geselecteerde voice_id
+                asyncio.run(generate_audio(text_input, voice_id, speed, pitch, output_filename))
                 
                 st.success("🎉 Audio succesvol gegenereerd!")
                 

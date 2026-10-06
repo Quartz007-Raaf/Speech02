@@ -65,8 +65,11 @@ output_filename = "output_free.mp3"
 
 # Asynchrone functie om de audio te genereren via edge-tts
 async def generate_audio(text, voice, rate_val, pitch_val, output_file):
+    # Snelheid (Rate) gebruikt nog wel percentages (bijv. "-20%")
     rate_str = f"{rate_val:+d}%" if rate_val != 0 else "+0%"
-    pitch_str = f"{pitch_val:+d}%" if pitch_val != 0 else "+0%"
+    
+    # Toonhoogte (Pitch) MOET in Hertz (Hz) worden aangegeven (bijv. "-12Hz")
+    pitch_str = f"{pitch_val:+d}Hz" if pitch_val != 0 else "+0Hz"
     
     communicate = edge_tts.Communicate(text, voice, rate=rate_str, pitch=pitch_str)
     await communicate.save(output_file)
